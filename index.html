@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WendyApp</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f0f13;
+      color: #f1f1f1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+
+    .logo {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #f59e0b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.3rem;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .app-card {
+      background: #1a1a24;
+      border: 1px solid #2e2e3e;
+      border-radius: 18px;
+      padding: 1.8rem 1.2rem;
+      text-align: center;
+      text-decoration: none;
+      color: #f1f1f1;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .app-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    }
+
+    .app-card.calorias { border-color: #4f46e5; }
+    .app-card.calorias:hover { border-color: #818cf8; box-shadow: 0 12px 30px rgba(79,70,229,0.2); }
+
+    .app-card.gym { border-color: #7c3aed; }
+    .app-card.gym:hover { border-color: #a78bfa; box-shadow: 0 12px 30px rgba(124,58,237,0.2); }
+
+    .app-icon { font-size: 2.8rem; }
+
+    .app-name {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .app-desc {
+      font-size: 0.72rem;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    .version {
+      margin-top: 3rem;
+      font-size: 0.72rem;
+      color: #374151;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">✦ WendyApp</div>
+  <div class="subtitle">Tu espacio de bienestar</div>
+
+  <div class="apps-grid">
+    <a href="calorias.html" class="app-card calorias">
+      <div class="app-icon">🥗</div>
+      <div class="app-name">NutriWen</div>
+      <div class="app-desc">Calorías y macros diarios</div>
+    </a>
+    <a href="gym.html" class="app-card gym">
+      <div class="app-icon">💪</div>
+      <div class="app-name">GymWen</div>
+      <div class="app-desc">Rutina y progresión de pesos</div>
+    </a>
+  </div>
+
+  <div class="version">WendyApp v1.0</div>
+
+</body>
+</html>
