@@ -487,6 +487,9 @@
       <div class="quick-grid" id="quick-grid"></div>
     </div>
 
+    <!-- MENSAJE MOTIVADOR -->
+    <div id="mensaje-motiv" style="display:none;background:#1e1b4b;border-radius:14px;padding:1.2rem;margin-bottom:1rem;border:1px solid #4f46e5;font-size:0.95rem;line-height:1.6;color:#e0e7ff"></div>
+
     <!-- REGISTRO -->
     <div class="log-section">
       <div class="log-header">
@@ -703,6 +706,25 @@
       `).join('');
 
       // Log
+      // Mensaje motivador
+      const motivEl = document.getElementById('mensaje-motiv');
+      let mensaje = null;
+      if (totals.prot >= 100 && totals.fat < 30) {
+        mensaje = '🦾 ¡Efecto Brazos Bellos Activado! Estás en el rango de definición Pro.';
+      } else if (totals.prot >= 80 && totals.cal <= state.goal) {
+        mensaje = '💪 ¡Proteína on point! Sigues construyendo músculo sin excederte. Gran día.';
+      } else if (totals.cal > state.goal) {
+        mensaje = '😅 Te pasaste un poco hoy — no pasa nada. Mañana volvemos al plan con energía.';
+      } else if (totals.prot < 50 && totals.cal > 0) {
+        mensaje = '🥚 Recuerda subir la proteína. Tu músculo te lo agradecerá.';
+      }
+      if (mensaje) {
+        motivEl.textContent = mensaje;
+        motivEl.style.display = 'block';
+      } else {
+        motivEl.style.display = 'none';
+      }
+
       const logEl = document.getElementById('log-list');
       if (state.log.length === 0) {
         logEl.innerHTML = `<div class="empty-state"><div class="icon">🍽️</div><p>Aún no has registrado alimentos hoy</p></div>`;

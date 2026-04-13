@@ -513,6 +513,12 @@
   </div>
 
   <!-- ANÁLISIS -->
+  <!-- RECORDATORIO FOTO -->
+  <div id="foto-reminder" style="display:none" class="card" style="border-color:#f59e0b">
+    <div style="font-size:1.3rem;margin-bottom:0.5rem">📸 ¡Es lunes!</div>
+    <div style="font-size:0.95rem;color:var(--text);line-height:1.6">Tómate una foto de progreso hoy. De frente, de lado y de espaldas. Guárdalas en una carpeta con la fecha — en unas semanas te alegrarás de haberlo hecho. 💪</div>
+  </div>
+
   <div id="analisis-card" style="display:none" class="card">
     <div class="card-title">Análisis</div>
     <div id="analisis-texto" style="font-size:1rem;line-height:1.6;color:var(--text)"></div>
@@ -1043,6 +1049,10 @@
   function renderCuerpo() {
     if (!state.registrosPeso) state.registrosPeso = [];
     const registros = state.registrosPeso.slice().reverse();
+
+    // Recordatorio foto los lunes
+    const esLunes = new Date().getDay() === 1;
+    document.getElementById('foto-reminder').style.display = esLunes ? 'block' : 'none';
     const analisisCard = document.getElementById('analisis-card');
     const analisisTexto = document.getElementById('analisis-texto');
     const historialList = document.getElementById('historial-peso-list');
