@@ -475,6 +475,56 @@
   <div id="rutina-content"></div>
 </div>
 
+<!-- SCREEN: CUERPO -->
+<div class="screen" id="screen-cuerpo">
+  <div class="card-title" style="padding:0 0 0.5rem">Registro semanal</div>
+
+  <!-- FORMULARIO -->
+  <div class="card">
+    <div class="card-title">Registrar esta semana</div>
+    <div class="input-group">
+      <label>Peso (kg)</label>
+      <input type="number" id="peso-input" placeholder="Ej: 65.4" step="0.1" min="30" max="200">
+    </div>
+    <div class="input-group">
+      <label>¿Cómo te queda el vaquero? 👖</label>
+      <select id="vaquero-input">
+        <option value="suelto">Suelto 🙌</option>
+        <option value="perfecto">Perfecto 😍</option>
+        <option value="apretado">Apretado 😅</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Nivel de energía</label>
+      <select id="energia-input">
+        <option value="alta">Alta ⚡</option>
+        <option value="media">Media 😐</option>
+        <option value="baja">Baja 😴</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>¿Subiste fuerza esta semana?</label>
+      <select id="fuerza-input">
+        <option value="true">Sí 💪</option>
+        <option value="false">No</option>
+      </select>
+    </div>
+    <button class="btn" onclick="guardarPeso()">Guardar registro</button>
+  </div>
+
+  <!-- ANÁLISIS -->
+  <div id="analisis-card" style="display:none" class="card">
+    <div class="card-title">Análisis</div>
+    <div id="analisis-texto" style="font-size:1rem;line-height:1.6;color:var(--text)"></div>
+  </div>
+
+  <!-- HISTORIAL PESO -->
+  <div class="card" id="historial-peso-card">
+    <div class="card-title">Historial de peso</div>
+    <div id="historial-peso-list"></div>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="showScreen('hoy',this)">
@@ -485,6 +535,9 @@
   </button>
   <button class="nav-item" onclick="showScreen('progreso',this)">
     <span class="icon">📈</span>Progreso
+  </button>
+  <button class="nav-item" onclick="showScreen('cuerpo',this)">
+    <span class="icon">⚖️</span>Cuerpo
   </button>
   <button class="nav-item" onclick="showScreen('rutina',this)">
     <span class="icon">📋</span>Rutina
@@ -630,6 +683,7 @@
     if (name === 'semana') renderSemana();
     if (name === 'progreso') renderProgreso();
     if (name === 'rutina') renderRutina();
+    if (name === 'cuerpo') renderCuerpo();
   }
 
   // ===== HOY =====
@@ -954,6 +1008,82 @@
     save();
     cerrarModal();
     renderRutina();
+  }
+
+  // ===== CUERPO & PESO =====
+  function analizarProgreso(pesoActual, pesoAnterior, fuerzaSubio) {
+    const diferencia = pesoActual - pesoAnterior;
+    if (diferencia <= 0 && fuerzaSubio) {
+      return "🔥 MODO RECOMPOSICIÓN: Estás perdiendo grasa y ganando músculo. ¡Tus marcas en el gym son récord!";
+    } else if (diferencia > 0 && fuerzaSubio) {
+      return "💪 CRECIMIENTO LIMPIO: El peso sube un poco, pero tu fuerza también. Estás construyendo curvas firmes.";
+    } else if (diferencia < 0) {
+      return "📉 DEFINICIÓN ACTIVA: La báscula baja. ¡Sigue con la proteína alta!";
+    } else {
+      return "🧘 MANTENIMIENTO: Cuerpo estable. Enfócate en la intensidad del entreno.";
+    }
+  }
+
+  function guardarPeso() {
+    const peso = parseFloat(document.getElementById('peso-input').value);
+    if (!peso) return;
+    const registro = {
+      fecha: new Date().toISOString().split('T')[0],
+      peso,
+      vaqueroStatus: document.getElementById('vaquero-input').value,
+      energia: document.getElementById('energia-input').value,
+      fuerzaSubio: document.getElementById('fuerza-input').value === 'true'
+    };
+    if (!state.registrosPeso) state.registrosPeso = [];
+    state.registrosPeso.push(registro);
+    save();
+    renderCuerpo();
+  }
+
+  function renderCuerpo() {
+    if (!state.registrosPeso) state.registrosPeso = [];
+    const registros = state.registrosPeso.slice().reverse();
+    const analisisCard = document.getElementById('analisis-card');
+    const analisisTexto = document.getElementById('analisis-texto');
+    const historialList = document.getElementById('historial-peso-list');
+
+    if (registros.length >= 2) {
+      const actual = registros[0];
+      const anterior = registros[1];
+      const texto = analizarProgreso(actual.peso, anterior.peso, actual.fuerzaSubio);
+      analisisTexto.textContent = texto;
+      analisisCard.style.display = 'block';
+    } else if (registros.length === 1) {
+      analisisTexto.textContent = 'Registra la próxima semana para ver tu análisis de progreso.';
+      analisisCard.style.display = 'block';
+    }
+
+    if (registros.length === 0) {
+      historialList.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:1rem 0">Aún no tienes registros</p>';
+      return;
+    }
+
+    const vaqueroIcon = { suelto: '🙌', perfecto: '😍', apretado: '😅' };
+    const energiaColor = { alta: '#22c55e', media: '#f59e0b', baja: '#ef4444' };
+
+    historialList.innerHTML = registros.map((r, i) => {
+      const diff = i < registros.length - 1 ? (r.peso - registros[i+1].peso).toFixed(1) : null;
+      const diffText = diff ? (diff > 0 ? `<span style="color:#ef4444">+${diff}kg</span>` : `<span style="color:#22c55e">${diff}kg</span>`) : '';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:0.85rem;color:var(--muted)">${r.fecha}</div>
+          <div style="font-size:0.75rem;margin-top:0.2rem">
+            ${vaqueroIcon[r.vaqueroStatus]} vaquero ·
+            <span style="color:${energiaColor[r.energia]}">energía ${r.energia}</span>
+            ${r.fuerzaSubio ? ' · 💪 fuerza ↑' : ''}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:1.1rem;font-weight:700;color:var(--primary-light)">${r.peso}kg</div>
+          <div style="font-size:0.75rem">${diffText}</div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   // ===== INIT =====
