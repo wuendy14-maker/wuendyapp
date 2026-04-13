@@ -1,11 +1,11 @@
 {
-  "name": "Contador de Calorías",
-  "short_name": "Calorías",
-  "description": "Registra tus comidas y macronutrientes diarios",
-  "start_url": "/calorias.html",
+  "name": "WendyApp",
+  "short_name": "WendyApp",
+  "description": "NutriWen y GymWen — tu espacio de bienestar",
+  "start_url": "/wuendyapp/",
   "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#4f46e5",
+  "background_color": "#0f0f13",
+  "theme_color": "#7c3aed",
   "orientation": "portrait",
   "icons": [
     {
