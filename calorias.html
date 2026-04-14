@@ -768,23 +768,51 @@
       return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
-    function buscarAlimento(q) {
-      const list = document.getElementById('autocomplete-list');
-      if (!q || q.length < 2) { list.style.display = 'none'; return; }
-      const resultados = DB_ALIMENTOS.filter(a =>
-        normalizar(a.name).includes(normalizar(q))
-      ).slice(0, 8);
-      if (resultados.length === 0) { list.style.display = 'none'; return; }
-      list.innerHTML = resultados.map((a, i) => {
-        const cal = Math.round(a.prot * 4 + a.carb * 4 + a.fat * 9);
-        return `<div onclick="seleccionarAlimento(${i})" style="padding:0.7rem 1rem;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;font-size:0.88rem;" onmouseover="this.style.background='#eef2ff'" onmouseout="this.style.background='#fff'">
-          <span>${a.name}</span>
-          <span style="color:var(--primary);font-weight:600;font-size:0.85rem">${cal} kcal</span>
-        </div>`;
-      }).join('');
-      list.style.display = 'block';
-      list._resultados = resultados;
-    }
+  async function buscarAlimento(q) {
+  const list = document.getElementById('autocomplete-list');
+  if (!q || q.length < 2) { list.style.display = 'none'; return; }
+
+  const CLAUDE_API_KEY = 'PEGA_AQUI_TU_KEY';
+
+  list.innerHTML = '<div style="padding:8px;color:var(--muted)">Buscando...</div>';
+  list.style.display = 'block';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        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
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: `Macros por 100g de: ${q}. Responde SOLO con este JSON sin texto extra: {"name":"${q}","prot":0,"carb":0,"fat":0}`
+        }]
+      })
+    });
+    const data = await response.json();
+    const alimento = JSON.parse(data.content[0].text);
+    const cal = Math.round(alimento.prot * 4 + alimento.carb * 4 + alimento.fat * 9);
+
+    const resultados = [alimento];
+    list.innerHTML = resultados.map((a, i) =>
+      `<div onclick="seleccionarAlimento(${i})" style="padding:8px;cursor:pointer">
+        <span>${a.name}</span>
+        <span style="color:var(--primary);font-weight:600;font-size:0.85rem"> · ${cal} kcal</span>
+      </div>`
+    ).join('');
+    list.style.display = 'block';
+    list._resultados = resultados;
+
+  } catch(e) {
+    list.innerHTML = '<div style="padding:8px;color:var(--danger)">Error al buscar. Revisa tu API key.</div>';
+  }
+}
 
     function seleccionarAlimento(i) {
       const list = document.getElementById('autocomplete-list');
