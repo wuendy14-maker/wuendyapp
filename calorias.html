@@ -893,8 +893,12 @@
     function setGramos(g) {
       const gramsEl = document.getElementById('food-grams');
       gramsEl.value = g;
-      const pBase = gramsEl.dataset.prot;
-      alert('BOTON: ' + g + 'g\nProtBase: ' + pBase);
+      const p = parseFloat(gramsEl.dataset.prot);
+      const c = parseFloat(gramsEl.dataset.carb);
+      const f = parseFloat(gramsEl.dataset.fat);
+      const factor = g / 100;
+      const calEsperadas = isNaN(p) ? 'SIN ALIMENTO' : Math.round((p*factor*4)+(c*factor*4)+(f*factor*9));
+      alert('Gramos: ' + g + '\nProt100: ' + gramsEl.dataset.prot + '\nCal esperadas: ' + calEsperadas);
       ajustarPorGramos();
     }
 
