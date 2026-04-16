@@ -483,7 +483,7 @@
 
     <!-- AGREGAR ALIMENTO -->
     <div class="add-card">
-      <h2>Agregar alimento</h2>
+      <h2>Agregar alimento <span style="font-size:0.7rem;color:var(--muted);font-weight:400">v10</span></h2>
       <div class="form-grid">
         <div class="form-group full" style="position:relative">
           <label>Buscar alimento</label>
@@ -891,7 +891,10 @@
     }
 
     function setGramos(g) {
-      document.getElementById('food-grams').value = g;
+      const gramsEl = document.getElementById('food-grams');
+      gramsEl.value = g;
+      const pBase = gramsEl.dataset.prot;
+      alert('BOTON: ' + g + 'g\nProtBase: ' + pBase);
       ajustarPorGramos();
     }
 
