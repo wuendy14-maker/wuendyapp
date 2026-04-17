@@ -631,6 +631,7 @@
       { name: 'Mantequilla de maní 2 cdas', prot: 8, carb: 6, fat: 16 },
       // Bebidas
       { name: 'Café sin azúcar', prot: 0, carb: 0, fat: 0 },
+      { name: 'Kombucha frutos rojos 100ml', prot: 0, carb: 2.3, fat: 0 },
       { name: 'Té de matcha', prot: 1, carb: 1, fat: 0 },
       // Verduras
       { name: 'Brócoli 1 taza', prot: 3, carb: 6, fat: 0 },
@@ -717,11 +718,8 @@
         ['food-name','food-cal','food-prot','food-carb','food-fat'].forEach(id => {
           document.getElementById(id).value = '';
         });
-        const gramsEl = document.getElementById('food-grams');
-        gramsEl.value = 100;
-        delete gramsEl.dataset.prot;
-        delete gramsEl.dataset.carb;
-        delete gramsEl.dataset.fat;
+        document.getElementById('food-grams').value = 100;
+        _p100 = null; _c100 = null; _f100 = null;
         document.getElementById('food-name').focus();
       }
     }
@@ -874,50 +872,38 @@
     list.style.display = 'block';
   }
 
+    var _p100 = null, _c100 = null, _f100 = null;
+
     function seleccionarAlimento(i) {
-      const list = document.getElementById('autocomplete-list');
-      const a = list._resultados[i];
-      const gramsEl = document.getElementById('food-grams');
-      gramsEl.dataset.prot = a.prot;
-      gramsEl.dataset.carb = a.carb;
-      gramsEl.dataset.fat  = a.fat;
+      var list = document.getElementById('autocomplete-list');
+      var a = list._resultados[i];
+      _p100 = a.prot; _c100 = a.carb; _f100 = a.fat;
       document.getElementById('food-name').value = a.name;
-      gramsEl.value = 100;
+      document.getElementById('food-grams').value = 100;
       document.getElementById('food-prot').value = a.prot;
       document.getElementById('food-carb').value = a.carb;
       document.getElementById('food-fat').value  = a.fat;
-      document.getElementById('food-cal').value  = Math.round(a.prot * 4 + a.carb * 4 + a.fat * 9);
+      document.getElementById('food-cal').value  = Math.round(a.prot*4 + a.carb*4 + a.fat*9);
       list.style.display = 'none';
     }
 
     function setGramos(g) {
-      const gramsEl = document.getElementById('food-grams');
-      gramsEl.value = g;
-      const p = parseFloat(gramsEl.dataset.prot);
-      const c = parseFloat(gramsEl.dataset.carb);
-      const f = parseFloat(gramsEl.dataset.fat);
-      const factor = g / 100;
-      const calEsperadas = isNaN(p) ? 'SIN ALIMENTO' : Math.round((p*factor*4)+(c*factor*4)+(f*factor*9));
-      alert('Gramos: ' + g + '\nProt100: ' + gramsEl.dataset.prot + '\nCal esperadas: ' + calEsperadas);
+      document.getElementById('food-grams').value = g;
       ajustarPorGramos();
     }
 
     function ajustarPorGramos() {
-      const gramsEl = document.getElementById('food-grams');
-      const prot100 = parseFloat(gramsEl.dataset.prot);
-      const carb100 = parseFloat(gramsEl.dataset.carb);
-      const fat100  = parseFloat(gramsEl.dataset.fat);
-      if (isNaN(prot100)) return; // ningún alimento seleccionado aún
-      const g = parseFloat(gramsEl.value);
+      if (_p100 === null) return;
+      var g = parseFloat(document.getElementById('food-grams').value);
       if (!g || g <= 0) return;
-      const factor = g / 100;
-      const prot = prot100 * factor;
-      const carb = carb100 * factor;
-      const fat  = fat100  * factor;
+      var factor = g / 100;
+      var prot = _p100 * factor;
+      var carb = _c100 * factor;
+      var fat  = _f100 * factor;
       document.getElementById('food-prot').value = prot.toFixed(1);
       document.getElementById('food-carb').value = carb.toFixed(1);
       document.getElementById('food-fat').value  = fat.toFixed(1);
-      document.getElementById('food-cal').value  = Math.round(prot * 4 + carb * 4 + fat * 9);
+      document.getElementById('food-cal').value  = Math.round(prot*4 + carb*4 + fat*9);
     }
 
     document.addEventListener('click', e => {
