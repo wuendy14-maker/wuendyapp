@@ -1106,8 +1106,78 @@
     var COMIDAS_CORTO = ['Desayuno','Merienda AM','Almuerzo','Merienda PM','Cena'];
 
     var menuSemOffset  = 0;
-    var menuDiaIdx     = (new Date().getDay() + 6) % 7; // 0=Lun … 6=Dom
+    var menuDiaIdx     = (new Date().getDay() + 6) % 7;
     var menuModoEditar = false;
+
+    // Banco de comidas auto-generadas (~1600 kcal / 160g P por día)
+    var MENU_PLANS = {
+      desayuno: [
+        { name: 'Yogur griego 200g + avena 40g + arándanos', cal: 395, prot: 39, carb: 49, fat: 5 },
+        { name: 'Avena 40g + 3 claras + 1 huevo',           cal: 295, prot: 29, carb: 29, fat: 9 },
+        { name: 'Yogur griego 200g + arándanos + almendras 20g', cal: 360, prot: 36, carb: 28, fat: 16 },
+        { name: '3 claras + 2 huevos + avena 30g',          cal: 360, prot: 35, carb: 23, fat: 15 },
+        { name: 'Yogur proteico x2 + avena 40g',            cal: 350, prot: 33, carb: 55, fat: 3 },
+        { name: 'Avena 50g + harina cacahuete 30g + leche desc.', cal: 450, prot: 35, carb: 57, fat: 13 },
+        { name: 'Yogur griego 200g + plátano + té matcha',  cal: 340, prot: 35, carb: 41, fat: 5 },
+      ],
+      meriendaAM: [
+        { name: 'Queso cottage ½ taza',                     cal: 110, prot: 14, carb: 4,  fat: 5 },
+        { name: 'Yogur griego 150g',                        cal: 150, prot: 26, carb: 9,  fat: 2 },
+        { name: 'Yogur proteico coco + té matcha',          cal: 80,  prot: 11, carb: 8,  fat: 1 },
+        { name: '3 claras de huevo',                        cal: 51,  prot: 11, carb: 1,  fat: 0 },
+        { name: 'Yogur griego + arándanos ½ taza',          cal: 143, prot: 18, carb: 18, fat: 1 },
+        { name: 'Queso cottage + arándanos ½ taza',         cal: 153, prot: 15, carb: 16, fat: 5 },
+        { name: 'Yogur proteico + almendras 15g',           cal: 162, prot: 13, carb: 8,  fat: 9 },
+      ],
+      almuerzo: [
+        { name: 'Pollo 180g + boniato 200g + brócoli',      cal: 480, prot: 58, carb: 43, fat: 7 },
+        { name: 'Pescado blanco 250g + boniato 200g',       cal: 410, prot: 52, carb: 43, fat: 6 },
+        { name: 'Pavo 200g + arroz 100g + espinacas',       cal: 425, prot: 57, carb: 50, fat: 3 },
+        { name: 'Salmón 200g + boniato 150g + brócoli',     cal: 520, prot: 57, carb: 32, fat: 26 },
+        { name: 'Camarones 200g + arroz 100g + aguacate ½', cal: 480, prot: 52, carb: 51, fat: 13 },
+        { name: 'Atún en agua 200g + boniato 200g',         cal: 405, prot: 56, carb: 43, fat: 3 },
+        { name: 'Pollo 150g + quinoa 150g + brócoli',       cal: 460, prot: 50, carb: 47, fat: 8 },
+      ],
+      meriendaPM: [
+        { name: 'Almendras 30g',                            cal: 173, prot: 6,  carb: 6,  fat: 15 },
+        { name: 'Nueces 30g',                               cal: 196, prot: 5,  carb: 4,  fat: 20 },
+        { name: 'Crema cacahuete 30g + manzana',            cal: 307, prot: 9,  carb: 29, fat: 14 },
+        { name: 'Yogur proteico + almendras 15g',           cal: 162, prot: 13, carb: 8,  fat: 9 },
+        { name: 'Harina cacahuete 30g + leche desc.',       cal: 195, prot: 17, carb: 18, fat: 9 },
+        { name: 'Queso cottage + fresa 1 taza',             cal: 158, prot: 15, carb: 16, fat: 5 },
+        { name: 'Yogur griego + nueces 15g',                cal: 198, prot: 20, carb: 8,  fat: 12 },
+      ],
+      cena: [
+        { name: 'Pescado blanco 250g + espinacas + aguacate ½', cal: 415, prot: 57, carb: 13, fat: 16 },
+        { name: 'Pavo 200g + brócoli + aceite oliva',       cal: 295, prot: 54, carb: 8,  fat: 7 },
+        { name: 'Pollo 180g + ensalada + aguacate ½',       cal: 460, prot: 57, carb: 9,  fat: 21 },
+        { name: 'Salmón 150g + espinacas + tomate',         cal: 367, prot: 42, carb: 12, fat: 16 },
+        { name: 'Camarones 250g + brócoli + aceite oliva',  cal: 310, prot: 62, carb: 9,  fat: 10 },
+        { name: '8 claras + 1 huevo + espinacas',           cal: 255, prot: 44, carb: 5,  fat: 6  },
+        { name: 'Atún en agua 150g + ensalada + aguacate ½',cal: 339, prot: 45, carb: 10, fat: 17 },
+      ],
+    };
+
+    function getWeekNum(offset) {
+      return parseInt(getSemanaKey(offset).split('-W')[1]);
+    }
+
+    function getAutoComida(comidaIdx, diaIdx, weekNum) {
+      var keys = ['desayuno','meriendaAM','almuerzo','meriendaPM','cena'];
+      var primes = [7, 11, 13, 17, 19];
+      var opts = MENU_PLANS[keys[comidaIdx]];
+      var idx = (weekNum * 3 + diaIdx * primes[comidaIdx]) % opts.length;
+      return opts[idx];
+    }
+
+    function getDiaConAuto(diaData, diaIdx) {
+      var weekNum = getWeekNum(menuSemOffset);
+      var resultado = {};
+      COMIDAS_MENU.forEach(function(c, ci) {
+        resultado[c] = diaData[c].name ? diaData[c] : getAutoComida(ci, diaIdx, weekNum);
+      });
+      return resultado;
+    }
 
     function getSemanaKey(offset) {
       var d = new Date();
@@ -1154,7 +1224,7 @@
 
       var sem     = cargarSemana();
       var diaKey  = DIAS_MENU[menuDiaIdx];
-      var diaData = sem[diaKey];
+      var diaData = getDiaConAuto(sem[diaKey], menuDiaIdx);
       var view    = document.getElementById('menu-dia-view');
 
       if (menuModoEditar) {
@@ -1173,16 +1243,22 @@
           '</div>' +
           '<button class="menu-save-btn" onclick="guardarDiaMenu()">Guardar día</button>';
       } else {
-        view.innerHTML = COMIDAS_MENU.map(function(c, i) {
+        var totCal = 0, totProt = 0;
+        var rows = COMIDAS_MENU.map(function(c, i) {
           var m = diaData[c];
+          totCal  += m.cal  || 0;
+          totProt += m.prot || 0;
           return '<div class="menu-meal-row">' +
             '<span class="menu-meal-lbl">' + COMIDAS_CORTO[i] + '</span>' +
-            (m.name
-              ? '<span class="menu-meal-name">' + m.name + '</span>' +
-                '<span class="menu-meal-macros">' + m.cal + ' kcal · ' + m.prot + 'g P</span>'
-              : '<span class="menu-meal-name menu-meal-empty">—</span>') +
+            '<span class="menu-meal-name">' + m.name + '</span>' +
+            '<span class="menu-meal-macros">' + m.cal + ' kcal · ' + m.prot + 'g P</span>' +
             '</div>';
         }).join('');
+        rows += '<div style="display:flex;justify-content:space-between;padding:0.6rem 0.2rem 0;border-top:1.5px solid var(--border);margin-top:0.3rem">' +
+          '<span style="font-size:0.8rem;font-weight:600;color:var(--muted)">Total día</span>' +
+          '<span style="font-size:0.88rem;font-weight:700;color:var(--primary)">' + totCal + ' kcal · ' + totProt + 'g P</span>' +
+          '</div>';
+        view.innerHTML = rows;
       }
     }
 
