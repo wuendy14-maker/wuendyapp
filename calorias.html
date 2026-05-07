@@ -429,6 +429,137 @@
       .form-grid { grid-template-columns: 1fr; }
       .quick-grid { grid-template-columns: repeat(2, 1fr); }
     }
+
+    /* MENÚ SEMANAL */
+    .menu-section {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      margin-bottom: 1.2rem;
+      border: 1px solid var(--border);
+    }
+    .menu-section h2 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .menu-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .week-nav { display: flex; align-items: center; gap: 0.4rem; }
+    .week-nav-btn {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      border-radius: 6px;
+      width: 28px; height: 28px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .week-label {
+      font-size: 0.73rem;
+      color: var(--muted);
+      min-width: 90px;
+      text-align: center;
+    }
+    .menu-edit-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.78rem;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .day-tabs { display: flex; gap: 0.3rem; margin-bottom: 1rem; }
+    .day-tab {
+      flex: 1;
+      padding: 0.4rem 0.1rem;
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .day-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .menu-meal-row {
+      display: flex;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--border);
+      gap: 0.5rem;
+      min-height: 42px;
+    }
+    .menu-meal-row:last-child { border-bottom: none; }
+    .menu-meal-lbl {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      min-width: 74px;
+    }
+    .menu-meal-name { flex: 1; font-size: 0.88rem; color: var(--text); }
+    .menu-meal-macros { font-size: 0.75rem; color: var(--primary); font-weight: 600; white-space: nowrap; }
+    .menu-meal-empty { color: var(--muted); font-size: 0.85rem; }
+    .menu-edit-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .menu-edit-hdr, .menu-edit-row {
+      display: grid;
+      grid-template-columns: 74px 1fr 52px 52px;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .menu-edit-hdr span {
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: center;
+    }
+    .menu-edit-hdr span:nth-child(2) { text-align: left; }
+    .menu-edit-row-lbl {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .menu-edit-row input {
+      padding: 0.4rem 0.45rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      width: 100%;
+    }
+    .menu-edit-row input:focus { border-color: var(--primary); }
+    .menu-save-btn {
+      width: 100%;
+      padding: 0.65rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 0.8rem;
+    }
   </style>
 </head>
 <body>
@@ -535,6 +666,21 @@
     <div class="quick-section">
       <h2>Acceso rápido</h2>
       <div class="quick-grid" id="quick-grid"></div>
+    </div>
+
+    <!-- MENÚ SEMANAL -->
+    <div class="menu-section">
+      <div class="menu-hdr">
+        <h2>Menú Semanal</h2>
+        <div class="week-nav">
+          <button class="week-nav-btn" onclick="cambiarSemana(-1)">‹</button>
+          <span class="week-label" id="menu-semana-label"></span>
+          <button class="week-nav-btn" onclick="cambiarSemana(1)">›</button>
+          <button class="menu-edit-btn" id="menu-edit-btn" onclick="toggleEditMenu()">Editar</button>
+        </div>
+      </div>
+      <div class="day-tabs" id="menu-tabs"></div>
+      <div id="menu-dia-view"></div>
     </div>
 
     <!-- MENSAJE MOTIVADOR -->
@@ -952,6 +1098,131 @@
     });
 
     render();
+
+    // ===== MENÚ SEMANAL =====
+    var DIAS_MENU  = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+    var DIAS_CORTO = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    var COMIDAS_MENU  = ['desayuno','meriendaAM','almuerzo','meriendaPM','cena'];
+    var COMIDAS_CORTO = ['Desayuno','Merienda AM','Almuerzo','Merienda PM','Cena'];
+
+    var menuSemOffset  = 0;
+    var menuDiaIdx     = (new Date().getDay() + 6) % 7; // 0=Lun … 6=Dom
+    var menuModoEditar = false;
+
+    function getSemanaKey(offset) {
+      var d = new Date();
+      var dia = d.getDay() || 7;
+      d.setDate(d.getDate() - dia + 1 + offset * 7);
+      var inicio = new Date(d.getFullYear(), 0, 1);
+      var sem = Math.ceil(((d - inicio) / 86400000 + 1) / 7);
+      return d.getFullYear() + '-W' + String(sem).padStart(2, '0');
+    }
+
+    function getSemanaLabel(offset) {
+      var d = new Date();
+      var dia = d.getDay() || 7;
+      var lunes = new Date(d);
+      lunes.setDate(d.getDate() - dia + 1 + offset * 7);
+      var domingo = new Date(lunes);
+      domingo.setDate(lunes.getDate() + 6);
+      var f = function(dt) { return dt.getDate() + '/' + (dt.getMonth() + 1); };
+      return f(lunes) + ' – ' + f(domingo);
+    }
+
+    function cargarSemana() {
+      var saved = localStorage.getItem('menu-' + getSemanaKey(menuSemOffset));
+      if (saved) return JSON.parse(saved);
+      var sem = {};
+      DIAS_MENU.forEach(function(d) {
+        sem[d] = {};
+        COMIDAS_MENU.forEach(function(c) { sem[d][c] = { name: '', cal: 0, prot: 0 }; });
+      });
+      return sem;
+    }
+
+    function guardarSemana(data) {
+      localStorage.setItem('menu-' + getSemanaKey(menuSemOffset), JSON.stringify(data));
+    }
+
+    function renderMenu() {
+      document.getElementById('menu-semana-label').textContent = getSemanaLabel(menuSemOffset);
+
+      document.getElementById('menu-tabs').innerHTML = DIAS_CORTO.map(function(lbl, i) {
+        return '<button class="day-tab ' + (i === menuDiaIdx ? 'active' : '') +
+               '" onclick="seleccionarDiaMenu(' + i + ')">' + lbl + '</button>';
+      }).join('');
+
+      var sem     = cargarSemana();
+      var diaKey  = DIAS_MENU[menuDiaIdx];
+      var diaData = sem[diaKey];
+      var view    = document.getElementById('menu-dia-view');
+
+      if (menuModoEditar) {
+        view.innerHTML =
+          '<div class="menu-edit-grid">' +
+          '<div class="menu-edit-hdr"><span></span><span>Plato</span><span>Kcal</span><span>Prot g</span></div>' +
+          COMIDAS_MENU.map(function(c, i) {
+            var m = diaData[c];
+            return '<div class="menu-edit-row">' +
+              '<span class="menu-edit-row-lbl">' + COMIDAS_CORTO[i].split(' ')[0] + '</span>' +
+              '<input type="text"   id="me-name-' + c + '" placeholder="Nombre del plato" value="' + m.name + '">' +
+              '<input type="number" id="me-cal-'  + c + '" placeholder="0" min="0" value="' + (m.cal  || '') + '">' +
+              '<input type="number" id="me-prot-' + c + '" placeholder="0" min="0" value="' + (m.prot || '') + '">' +
+              '</div>';
+          }).join('') +
+          '</div>' +
+          '<button class="menu-save-btn" onclick="guardarDiaMenu()">Guardar día</button>';
+      } else {
+        view.innerHTML = COMIDAS_MENU.map(function(c, i) {
+          var m = diaData[c];
+          return '<div class="menu-meal-row">' +
+            '<span class="menu-meal-lbl">' + COMIDAS_CORTO[i] + '</span>' +
+            (m.name
+              ? '<span class="menu-meal-name">' + m.name + '</span>' +
+                '<span class="menu-meal-macros">' + m.cal + ' kcal · ' + m.prot + 'g P</span>'
+              : '<span class="menu-meal-name menu-meal-empty">—</span>') +
+            '</div>';
+        }).join('');
+      }
+    }
+
+    function seleccionarDiaMenu(i) {
+      menuDiaIdx = i;
+      menuModoEditar = false;
+      document.getElementById('menu-edit-btn').textContent = 'Editar';
+      renderMenu();
+    }
+
+    function cambiarSemana(dir) {
+      menuSemOffset += dir;
+      menuModoEditar = false;
+      document.getElementById('menu-edit-btn').textContent = 'Editar';
+      renderMenu();
+    }
+
+    function toggleEditMenu() {
+      menuModoEditar = !menuModoEditar;
+      document.getElementById('menu-edit-btn').textContent = menuModoEditar ? 'Ver' : 'Editar';
+      renderMenu();
+    }
+
+    function guardarDiaMenu() {
+      var sem    = cargarSemana();
+      var diaKey = DIAS_MENU[menuDiaIdx];
+      COMIDAS_MENU.forEach(function(c) {
+        sem[diaKey][c] = {
+          name: document.getElementById('me-name-' + c).value.trim(),
+          cal:  parseInt(document.getElementById('me-cal-'  + c).value) || 0,
+          prot: parseInt(document.getElementById('me-prot-' + c).value) || 0,
+        };
+      });
+      guardarSemana(sem);
+      menuModoEditar = false;
+      document.getElementById('menu-edit-btn').textContent = 'Editar';
+      renderMenu();
+    }
+
+    renderMenu();
 
     // Eliminar service workers viejos que bloquean actualizaciones
     if ('serviceWorker' in navigator) {
