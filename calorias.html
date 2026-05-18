@@ -1,6 +1,314 @@
 <!DOCTYPE html>
 <html lang="es">
+<head><!DOCTYPE html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contador de Calorías</title>
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('wendyapp-theme') || 'light')</script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Calorías">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #f4f6f9;
+            --surface: #ffffff;
+            --card: #f0f2f7;
+            --primary: #4f46e5;
+            --primary-light: #eef2ff;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #111827;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --radius: 14px;
+        }
+        [data-theme="dark"] {
+            --bg: #0b0f19;
+            --surface: #151b2c;
+            --card: #1e2640;
+            --text: #f9fafb;
+            --muted: #9ca3af;
+            --border: #2d3748;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 16px; padding-bottom: 90px; transition: background 0.3s, color 0.3s; }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+        .card { background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .macro-box { background: var(--card); padding: 12px; border-radius: 10px; text-align: center; }
+        .macro-val { font-size: 18px; font-weight: 600; display: block; }
+        .macro-lbl { font-size: 12px; color: var(--muted); }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+        select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 16px; font-family: inherit; outline: none; }
+        select:focus, input:focus { border-color: var(--primary); }
+        button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+        button:active { opacity: 0.9; }
+        .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .btn-quick { padding: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; text-align: left; cursor: pointer; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
+        .list-item:last-child { border-bottom: none; }
+        .item-info h4 { font-size: 15px; font-weight: 500; }
+        .item-info p { font-size: 12px; color: var(--muted); }
+        .btn-del { background: transparent; color: var(--danger); border: none; padding: 4px 8px; cursor: pointer; font-size: 14px; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px; }
+        .nav-item { color: var(--muted); text-decoration: none; font-size: 12px; text-align: center; }
+        .nav-item.active { color: var(--primary); font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Calorías</h1>
+        
+        <div class="card">
+            <div style="text-align:center; margin-bottom:16px;">
+                <span id="total-cal" style="font-size:36px; font-weight:600;">0</span>
+                <p style="color:var(--muted); font-size:14px;">/ 1600 kcal del día</p>
+            </div>
+            <div class="grid-3">
+                <div class="macro-box"><span class="macro-val" id="total-prot">0g</span><span class="macro-lbl">Proteína (170g)</span></div>
+                <div class="macro-box"><span class="macro-val" id="total-carb">0g</span><span class="macro-lbl">Carbos</span></div>
+                <div class="macro-box"><span class="macro-val" id="total-gras">0g</span><span class="macro-lbl">Grasas</span></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Accesos Rápidos</h3>
+            <div style="margin-bottom:12px;"></div>
+            <div class="quick-grid" id="quick-container"></div>
+        </div>
+
+        <div class="card">
+            <h3>Buscador Avanzado</h3>
+            <div style="margin-bottom:12px;"></div>
+            <div class="form-group">
+                <label for="food-select">Selecciona Alimento</label>
+                <select id="food-select" onchange="actualizarPlaceholder()"></select>
+            </div>
+            <div class="form-group">
+                <label id="label-cantidad" for="food-amount">Cantidad (g)</label>
+                <input type="number" id="food-amount" value="100" min="0">
+            </div>
+            <button onclick="agregarDelBuscador()">Añadir al registro</button>
+        </div>
+
+        <div class="card" style="padding:0; overflow:hidden;">
+            <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
+                <h3>Comidas de Hoy</h3>
+            </div>
+            <div id="log-container"></div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="índice.html" class="nav-item">🏠<br>Inicio</a>
+        <a href="calorías.html" class="nav-item active">🍳<br>Dieta</a>
+        <a href="gimnasio.html" class="nav-item">💪<br>Entreno</a>
+    </div>
+
+    <script>
+        // 1. BASE DE DATOS ESTÁNDAR (Macros reales por cada 100g en crudo)
+        const DB_ALIMENTOS = [
+          { nombre: 'Tomate crudo', cal: 18, prot: 0.9, carb: 3.9, gras: 0.2 },
+          { nombre: 'Boniato', cal: 86, prot: 1.6, carb: 20.0, gras: 0.1 },
+          { nombre: 'Patata / Papa', cal: 77, prot: 2.0, carb: 17.0, gras: 0.1 },
+          { nombre: 'Plátano macho (horno)', cal: 120, prot: 1.3, carb: 31.0, gras: 0.3 },
+          { nombre: 'Lomo de cerdo', cal: 143, prot: 26.0, carb: 0.0, gras: 4.5 },
+          { nombre: 'Pechuga de pollo', cal: 120, prot: 23.0, carb: 0.0, gras: 2.5 },
+          { nombre: 'Gambas peladas', cal: 85, prot: 20.0, carb: 0.0, gras: 0.5 },
+          { nombre: 'Atún en aceite (escurrido)', cal: 198, prot: 27.0, carb: 0.0, gras: 10.0 },
+          { nombre: 'Caballa en aceite (escurrido)', cal: 250, prot: 22.0, carb: 0.0, gras: 18.0 },
+          { nombre: 'Brócoli', cal: 34, prot: 2.8, carb: 7.0, gras: 0.4 },
+          { nombre: 'Espinaca', cal: 23, prot: 2.9, carb: 3.6, gras: 0.4 },
+          { nombre: 'Zanahoria', cal: 41, prot: 0.9, carb: 10.0, gras: 0.2 },
+          { nombre: 'Pepino', cal: 15, prot: 0.7, carb: 3.6, gras: 0.1 },
+          { nombre: 'Aguacate', cal: 160, prot: 2.0, carb: 9.0, gras: 15.0 },
+          { nombre: 'Crema de cacahuete', cal: 588, prot: 25.0, carb: 12.0, gras: 50.0 }
+        ];
+
+        // 2. ACCESOS RÁPIDOS / PORCIONES O UNIDADES FIJAS
+        const QUICK_FOODS = [
+          { nombre: '1 Huevo entero (Mediano M)', cal: 73, prot: 6.5, carb: 0.3, gras: 5.0 },
+          { nombre: 'Claras de huevo (100g)', cal: 48, prot: 11.0, carb: 0.7, gras: 0.0 },
+          { nombre: 'Yogur griego 0% (Porción 80g)', cal: 81, prot: 13.0, carb: 4.0, gras: 0.0 },
+          { nombre: 'Queso cottage (Porción 100g)', cal: 117, prot: 14.0, carb: 4.0, gras: 5.0 },
+          { nombre: 'Aceite de oliva (1 cdta - 5g)', cal: 45, prot: 0.0, carb: 0.0, gras: 5.0 },
+          { nombre: 'Aceite de oliva (1 cda - 10g)', cal: 90, prot: 0.0, carb: 0.0, gras: 10.0 },
+          { nombre: 'Arándanos (1 taza - 100g)', cal: 57, prot: 0.7, carb: 14.0, gras: 0.3 },
+          { nombre: 'Nueces (Porción 30g)', cal: 196, prot: 4.5, carb: 4.0, gras: 19.5 },
+          { nombre: 'Almendras (Porción 30g)', cal: 173, prot: 6.0, carb: 6.0, gras: 15.0 },
+          { nombre: 'Té de matcha / Café solo', cal: 2, prot: 0.0, carb: 0.0, gras: 0.0 },
+          { nombre: 'Weider 60% Protein Bar (1b)', cal: 162, prot: 27.0, carb: 11.0, gras: 4.4 }
+        ];
+
+        let diario = JSON.parse(localStorage.getItem('diario_calorias')) || [];
+
+        // Inicializar interfaz
+        window.onload = function() {
+            renderQuickFoods();
+            populateSelect();
+            actualizarPlaceholder();
+            renderLog();
+        };
+
+        function renderQuickFoods() {
+            const container = document.getElementById('quick-container');
+            container.innerHTML = '';
+            QUICK_FOODS.forEach(food => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-quick';
+                btn.innerHTML = `<strong>${food.nombre}</strong><br><span style="color:var(--muted); font-size:11px;">${food.cal} kcal</span>`;
+                btn.onclick = () => agregarAlimentoDirecto(food);
+                container.appendChild(btn);
+            });
+        }
+
+        function populateSelect() {
+            const select = document.getElementById('food-select');
+            select.innerHTML = '';
+            
+            // Añadir cabecera informativa
+            const optGroupDb = document.createElement('optgroup');
+            optGroupDb.label = "Por gramos (Base 100g)";
+            DB_ALIMENTOS.forEach(f => {
+                let opt = document.createElement('option');
+                opt.value = 'db_' + f.nombre;
+                opt.textContent = f.nombre;
+                optGroupDb.appendChild(opt);
+            });
+            select.appendChild(optGroupDb);
+
+            const optGroupQuick = document.createElement('optgroup');
+            optGroupQuick.label = "Por Unidades / Porciones fijas";
+            QUICK_FOODS.forEach(f => {
+                let opt = document.createElement('option');
+                opt.value = 'q_' + f.nombre;
+                opt.textContent = f.nombre;
+                optGroupQuick.appendChild(opt);
+            });
+            select.appendChild(optGroupQuick);
+        }
+
+        function actualizarPlaceholder() {
+            const select = document.getElementById('food-select');
+            const label = document.getElementById('label-cantidad');
+            const input = document.getElementById('food-amount');
+            
+            if (select.value.startsWith('q_')) {
+                label.textContent = "Cantidad (Unidades / Porciones)";
+                input.value = "1";
+            } else {
+                label.textContent = "Cantidad (g)";
+                input.value = "100";
+            }
+        }
+
+        function agregarAlimentoDirecto(food) {
+            const item = {
+                nombre: food.nombre,
+                cal: Math.round(food.cal),
+                prot: Number(food.prot.toFixed(1)),
+                carb: Number(food.carb.toFixed(1)),
+                gras: Number(food.gras.toFixed(1)),
+                cantidad: 1,
+                unidad: 'porción/ud'
+            };
+            diario.push(item);
+            guardarYActualizar();
+        }
+
+        function agregarDelBuscador() {
+            const select = document.getElementById('food-select');
+            const inputVal = parseFloat(document.getElementById('food-amount').value);
+            if (isNaN(inputVal) || inputVal <= 0) return;
+
+            let food;
+            let item = {};
+            
+            if (select.value.startsWith('q_')) {
+                const name = select.value.replace('q_', '');
+                food = QUICK_FOODS.find(f => f.nombre === name);
+                item = {
+                    nombre: food.nombre,
+                    cal: Math.round(food.cal * inputVal),
+                    prot: Number((food.prot * inputVal).toFixed(1)),
+                    carb: Number((food.carb * inputVal).toFixed(1)),
+                    gras: Number((food.gras * inputVal).toFixed(1)),
+                    cantidad: inputVal,
+                    unidad: 'porción/ud'
+                };
+            } else {
+                const name = select.value.replace('db_', '');
+                food = DB_ALIMENTOS.find(f => f.nombre === name);
+                item = {
+                    nombre: food.nombre,
+                    cal: Math.round((food.cal * inputVal) / 100),
+                    prot: Number(((food.prot * inputVal) / 100).toFixed(1)),
+                    carb: Number(((food.carb * inputVal) / 100).toFixed(1)),
+                    gras: Number(((food.gras * inputVal) / 100).toFixed(1)),
+                    cantidad: inputVal,
+                    unidad: 'g'
+                };
+            }
+
+            diario.push(item);
+            guardarYActualizar();
+        }
+
+        function eliminarItem(index) {
+            diario.splice(index, 1);
+            guardarYActualizar();
+        }
+
+        function guardarYActualizar() {
+            localStorage.setItem('diario_calorias', JSON.stringify(diario));
+            renderLog();
+        }
+
+        function renderLog() {
+            const container = document.getElementById('log-container');
+            container.innerHTML = '';
+
+            let tCal = 0, tProt = 0, tCarb = 0, tGras = 0;
+
+            if (diario.length === 0) {
+                container.innerHTML = '<p style="padding:20px; color:var(--muted); text-align:center;">No hay alimentos registrados hoy.</p>';
+            } else {
+                diario.forEach((item, index) => {
+                    tCal += item.cal;
+                    tProt += item.prot;
+                    tCarb += item.carb;
+                    tGras += item.gras;
+
+                    const div = document.createElement('div');
+                    div.className = 'list-item';
+                    div.innerHTML = `
+                        <div class="item-info">
+                            <h4>${item.nombre}</h4>
+                            <p>${item.cantidad}${item.unidad} • ${item.cal} kcal • P: ${item.prot}g | C: ${item.carb}g | G: ${item.gras}g</p>
+                        </div>
+                        <button class="btn-del" onclick="eliminarItem(${index})">✕</button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            document.getElementById('total-cal').textContent = Math.round(tCal);
+            document.getElementById('total-prot').textContent = Math.round(tProt) + 'g';
+            document.getElementById('total-carb').textContent = Math.round(tCarb) + 'g';
+            document.getElementById('total-gras').textContent = Math.round(tGras) + 'g';
+        }
+    </script>
+</body>
+</html>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contador de Calorías</title>
