@@ -314,10 +314,18 @@
   <title>Contador de Calorías</title>
   <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('wendyapp-theme')||'light')</script>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="theme-color" content="#7c3aed">
+  
+  <!-- iOS PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Calorías">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WendyApp">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <!-- Additional PWA Meta Tags -->
+  <meta name="description" content="Contador de calorías, macros y bienestar">
+  <meta name="keywords" content="calorías, fitness, nutrición, macros">
+  <meta name="app-mobile-web-app-status-bar" content="#7c3aed">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1610,11 +1618,10 @@
 
     renderMenu();
 
-    // Eliminar service workers viejos que bloquean actualizaciones
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(r => r.unregister());
-      });
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registrado'))
+        .catch(err => console.error('SW registro falló', err));
     }
   </script>
 </body>
